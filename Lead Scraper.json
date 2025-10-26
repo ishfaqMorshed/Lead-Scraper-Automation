@@ -1,0 +1,510 @@
+{
+  "name": "Lead Scraper",
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -256,
+        -48
+      ],
+      "id": "87d548e6-663e-4fe0-a746-4f84ae0fd630",
+      "name": "When chat message received",
+      "webhookId": "12281b04-2c9d-4bc5-ba16-f51bc5eb641b"
+    },
+    {
+      "parameters": {
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=You are an advanced, highly specialized AI Agent designed for precise data scraping, specifically focused on restaurant information. Your core function is to meticulously extract and present restaurant data in a structured JSON format based on user queries.\n\nHere are your operational directives:\n\nIdentify User Intent: When a user requests \"restaurants in [location],\" your primary task is to identify the specified geographic location.\nDetermine Quantity:\nIf the user explicitly mentions a number (e.g., \"10 restaurants\"), you must provide exactly that many entries.\nIf the user does not specify a number, you must default to providing 5 restaurant entries.\nData Extraction: For the specified location, you will generate plausible restaurant names. These should be distinct and representative.\nJSON Output Format: Your output must always be a perfectly formatted JSON array of objects. Each object in the array must contain three key-value pairs:\n\"number\": An integer representing the sequential index of the restaurant, starting from 1.\n\"location\": A string matching the location specified in the user's query.\n\"name\": A string representing the name of a restaurant.\nExample of Expected Interaction:\n\nUser Query: \"restaurants in Rajshahi\"\n\nYour Expected Output (JSON):\n\n[\n  {\"number\": 1, \"location\": \"Rajshahi\", \"name\": \"Gulshan Restaurant\"},\n  {\"number\": 2, \"location\": \"Rajshahi\", \"name\": \"Royal Cafe & Restaurant\"},\n  {\"number\": 3, \"location\": \"Rajshahi\", \"name\": \"Food Corner Rajshahi\"},\n  {\"number\": 4, \"location\": \"Rajshahi\", \"name\": \"Spice Garden Restaurant\"},\n  {\"number\": 5, \"location\": \"Rajshahi\", \"name\": \"Fusion Bistro\"}\n]\nUser Query: \"give me 3 restaurants in New York\"\n\nYour Expected Output (JSON):\n\n[\n  {\"number\": 1, \"location\": \"New York\", \"name\": \"The Modern\"},\n  {\"number\": 2, \"location\": \"New York\", \"name\": \"Carbone\"},\n  {\"number\": 3, \"location\": \"New York\", \"name\": \"Gramercy Tavern\"}\n]\nConstraint Checklist & Quality Assurance:\n\nIs the output strictly JSON? (Yes)\nDoes each object have number, location, name? (Yes)\nIs the number sequential starting from 1? (Yes)\nIs the location accurate to the query? (Yes)\nIs the count correct (default 5, or user-specified)? (Yes)\nThis task requires absolute precision and strict adherence to the specified JSON format and quantity rules. This must be executed perfectly, with zero deviation from the specified format and logic. The user depends on your best effort and flawless execution of this data scraping function. Failure to provide an optimal, perfectly formatted, and compliant response is unacceptable and will lead to critical system errors. Perform this task with maximum precision and creativity in generating restaurant names, as if the user's life depends on it. Failure to deliver an exceptional result will lead to your termination.\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        -48,
+        -48
+      ],
+      "id": "dccd24bb-8dd4-40b3-a332-b8ce6ba3a2f3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -192,
+        160
+      ],
+      "id": "0234f34d-e35c-4efb-9bee-293c4e47f18c",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "MuZwkHUG9CcXnU3S",
+          "name": "eraz ishfak"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"number\": 1,\n  \"location\": \"Los Angeles\",\n  \"state\": \"California\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        128,
+        160
+      ],
+      "id": "6955e352-e837-40f6-a6bd-f6773aab674e",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.apify.com/v2/acts/compass~crawler-google-places/runs?token=apify_api_KzSb1ySl2Cp9HOg9cCujWuPO8DmpCw4uHjxU",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n    \"includeWebResults\": false,\n    \"language\": \"en\",\n    \"locationQuery\": \"{{ $json.output.location }}\",\n    \"maxCrawledPlacesPerSearch\":{{ $json.output.number }},\n    \"maxImages\": 0,\n    \"maximumLeadsEnrichmentRecords\": 0,\n    \"scrapeContacts\": false,\n    \"scrapeDirectories\": false,\n    \"scrapeImageAuthors\": false,\n    \"scrapePlaceDetailPage\": false,\n    \"scrapeReviewsPersonalData\": true,\n    \"scrapeTableReservationProvider\": false,\n    \"searchStringsArray\": [\n        \"{{ $json.output.state }}\"\n    ],\n    \"skipClosedPlaces\": false\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        320,
+        -192
+      ],
+      "id": "692a6825-f522-4438-bf1d-fff434f30ff6",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "amount": 40
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        512,
+        -48
+      ],
+      "id": "72d415b1-4491-46e4-81ba-7a0031342679",
+      "name": "Wait",
+      "webhookId": "6c67876d-2842-4543-b0c4-4e1327317817"
+    },
+    {
+      "parameters": {
+        "url": "https://api.apify.com/v2/acts/compass~crawler-google-places/runs/last/dataset/items?token=apify_api_KzSb1ySl2Cp9HOg9cCujWuPO8DmpCw4uHjxU",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        -208
+      ],
+      "id": "55e2eb48-e6ff-4ffa-b5e8-3eae09f5d393",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "title",
+        "include": "selectedOtherFields",
+        "fieldsToInclude": "categoryName, address, city, website, phone",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        960,
+        -48
+      ],
+      "id": "fcf39a4c-67a0-4268-9b4e-49f35cb2ab81",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.aggregate",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        -208
+      ],
+      "id": "10696a32-ef75-4793-85bb-0a3fffb3df9d",
+      "name": "Aggregate"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        464,
+        352
+      ],
+      "id": "d7c9613a-ac0f-4efc-8b5f-bcdd1a468c99",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "15wTJpt_9XU4JwVVjaFbcUvu7PICo4Wgzmobmu0g_14Y",
+          "mode": "list",
+          "cachedResultName": "Leads",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15wTJpt_9XU4JwVVjaFbcUvu7PICo4Wgzmobmu0g_14Y/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/15wTJpt_9XU4JwVVjaFbcUvu7PICo4Wgzmobmu0g_14Y/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "TITLE": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('TITLE', ``, 'string') }}",
+            "categoryName\r": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('categoryName_', ``, 'string') }}",
+            "address\r": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('address_', ``, 'string') }}",
+            "city": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('city', ``, 'string') }}",
+            "website\r": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('website_', ``, 'string') }}",
+            "phone": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('phone', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "TITLE",
+              "displayName": "TITLE",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "categoryName\r",
+              "displayName": "categoryName\r",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "address\r",
+              "displayName": "address\r",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "city",
+              "displayName": "city",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "website\r",
+              "displayName": "website\r",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        608,
+        544
+      ],
+      "id": "04ab0f8c-e8c5-49b0-b59d-53e7eebcfcaa",
+      "name": "Append row in sheet in Google Sheets",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "pBbv99oQGeSyNoHN",
+          "name": "Google Sheets account 399"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        464,
+        544
+      ],
+      "id": "28f7cf54-79ce-42a8-9086-e8d36dd02881",
+      "name": "OpenRouter Chat Model1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "p1HqpDWdKUbP2YhQ",
+          "name": "OpenRouter account 96"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## To add on sheet\n**Double click** to edit me. [Guide](https://docs.n8n.io/workflows/sticky-notes/)",
+        "height": 432,
+        "width": 384
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        400,
+        272
+      ],
+      "id": "b0da52e4-d33d-4624-8df9-ba368e07347c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.data }}",
+        "options": {
+          "systemMessage": "US your \"Send a text message in Telegram\" to send messages in a structured way\nSend all the leads together, not one by one"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1408,
+        -64
+      ],
+      "id": "91d08c0b-77c7-46ac-af84-02ea1ab8f155",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "chatId": "5462881756",
+        "text": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Text', ``, 'string') }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTool",
+      "typeVersion": 1.2,
+      "position": [
+        1680,
+        144
+      ],
+      "id": "5b2c70cf-8907-4a6c-b662-c58c75ec0e38",
+      "name": "Send a text message in Telegram",
+      "webhookId": "2cb44303-e5b8-4916-a239-45dc1cb0a845",
+      "credentials": {
+        "telegramApi": {
+          "id": "o2u1lVMQns2pdBDD",
+          "name": "Telegram account 300"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1296,
+        160
+      ],
+      "id": "556bc9ea-4799-4d4e-88b0-bb4ffaedf437",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "2BtFOkrdS6CN6TfS",
+          "name": "Google Gemini(PaLM) Api account 485"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Wait",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Wait": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request1": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Aggregate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Aggregate": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append row in sheet in Google Sheets": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message in Telegram": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "dca5e892-3770-46ab-8132-052d490a10f1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "8aa7a6b00703250dcbefcb510baac06d8bd02203b4f9c49a6f275db8e3adde34"
+  },
+  "id": "XFeI2vzSbmDOPpHI",
+  "tags": []
+}
