@@ -2,7 +2,7 @@
 
 ## Overview
 
-Lead Scraper is an automated lead generation and data extraction system designed to collect valuable business intelligence. It scrapes data from various online sources and organizes it for use in sales and marketing campaigns.
+Lead Scraper is an automated lead generation and data extraction system designed to collect valuable business intelligence. It scrapes data from various online sources(USED APIFY API) and organizes it for use in sales and marketing campaigns.
 
 ---
 
